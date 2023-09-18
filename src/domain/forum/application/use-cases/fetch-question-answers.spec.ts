@@ -1,5 +1,3 @@
-import { makeQuestion } from 'test/factories/make-question';
-import { FetchRecentQuestionsUseCase } from './fetch-recent-questions';
 import { InMemoryAnswerRepository } from 'test/repositories/in-memory-answer-repository';
 import { FetchQuestionAnswersUseCase } from './fetch-question-answers';
 import { makeAnswer } from 'test/factories/make-answer';
@@ -16,7 +14,7 @@ describe('Fetch Questions Answers', () => {
       new InMemoryAnswerAttachmentRepository();
 
     inMemoryAnswersRepository = new InMemoryAnswerRepository(
-      inMemoryAnswerAttachmentRepository
+      inMemoryAnswerAttachmentRepository,
     );
 
     sut = new FetchQuestionAnswersUseCase(inMemoryAnswersRepository);
@@ -24,13 +22,13 @@ describe('Fetch Questions Answers', () => {
 
   it('should to be able to fetch question answers', async () => {
     await inMemoryAnswersRepository.create(
-      makeAnswer({ answerId: new UniqueEntityID('answer-1') })
+      makeAnswer({ questionId: new UniqueEntityID('answer-1') }),
     );
     await inMemoryAnswersRepository.create(
-      makeAnswer({ answerId: new UniqueEntityID('answer-1') })
+      makeAnswer({ questionId: new UniqueEntityID('answer-1') }),
     );
     await inMemoryAnswersRepository.create(
-      makeAnswer({ answerId: new UniqueEntityID('answer-1') })
+      makeAnswer({ questionId: new UniqueEntityID('answer-1') }),
     );
 
     const result = await sut.execute({
@@ -44,7 +42,7 @@ describe('Fetch Questions Answers', () => {
   it('should to be able to fetch paginated question answer', async () => {
     for (let i = 1; i <= 22; i++) {
       await inMemoryAnswersRepository.create(
-        makeAnswer({ answerId: new UniqueEntityID('answer-1') })
+        makeAnswer({ questionId: new UniqueEntityID('answer-1') }),
       );
     }
 

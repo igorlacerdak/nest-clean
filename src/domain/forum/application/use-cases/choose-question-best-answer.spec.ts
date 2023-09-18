@@ -39,7 +39,7 @@ describe('Choose Question Best Answer', () => {
   it('should to be able to choose question best answer', async () => {
     const question = makeQuestion();
     const answer = makeAnswer({
-      answerId: question.id,
+      questionId: question.id,
     });
 
     await inMemoryQuestionRepository.create(question);
@@ -58,7 +58,7 @@ describe('Choose Question Best Answer', () => {
       authorId: new UniqueEntityID('author-1'),
     });
     const answer = makeAnswer({
-      answerId: question.id,
+      questionId: question.id,
     });
 
     await inMemoryQuestionRepository.create(question);

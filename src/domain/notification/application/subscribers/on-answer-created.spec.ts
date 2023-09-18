@@ -34,18 +34,18 @@ describe('On answer created', () => {
       new InMemoryQuestionAttachmentRepository();
 
     inMemoryQuestionRepository = new InMemoryQuestionsRepository(
-      inMemoryQuestionAttachmentRepository
+      inMemoryQuestionAttachmentRepository,
     );
 
     inMemoryAnswerAttachmentRepository =
       new InMemoryAnswerAttachmentRepository();
 
     inMemoryAnswerRepository = new InMemoryAnswerRepository(
-      inMemoryAnswerAttachmentRepository
+      inMemoryAnswerAttachmentRepository,
     );
 
     sendNotificationUseCase = new SendNotificationUseCase(
-      inMemoryNotificationsRepository
+      inMemoryNotificationsRepository,
     );
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute');
@@ -56,7 +56,7 @@ describe('On answer created', () => {
   it('should send a notification when an answer is created', async () => {
     const question = makeQuestion();
     const answer = makeAnswer({
-      answerId: question.id,
+      questionId: question.id,
     });
 
     inMemoryQuestionRepository.create(question);

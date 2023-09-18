@@ -25,11 +25,11 @@ export class InMemoryAnswerRepository implements AnswerRepository {
   }
 
   public async findManyByAnswerId(
-    answerId: string,
-    { page }: PaginationParams
+    questionId: string,
+    { page }: PaginationParams,
   ): Promise<Answer[]> {
     const answers = this.items
-      .filter((item) => item.answerId.toString() === answerId)
+      .filter((item) => item.questionId.toString() === questionId)
       .slice((page - 1) * 20, page * 20);
 
     return answers;

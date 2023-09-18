@@ -6,11 +6,11 @@ import { AnswerCreatedEvent } from '../events/answer-created-event';
 
 export interface AnswerProps {
   authorId: UniqueEntityID;
-  answerId: UniqueEntityID;
+  questionId: UniqueEntityID;
   content: string;
   attachments: AnswerAttachmentList;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt?: Date | null;
 }
 
 export class Answer extends AggregateRoot<AnswerProps> {
@@ -18,8 +18,8 @@ export class Answer extends AggregateRoot<AnswerProps> {
     return this.props.authorId;
   }
 
-  get answerId() {
-    return this.props.answerId;
+  get questionId() {
+    return this.props.questionId;
   }
 
   get content() {

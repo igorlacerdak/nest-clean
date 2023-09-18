@@ -33,7 +33,7 @@ export class ChooseQuestionBestAnswerUseCase {
     }
 
     const question = await this.questionsRepository.findById(
-      answer.answerId.toString(),
+      answer.questionId.toString(),
     );
 
     if (!question) {
