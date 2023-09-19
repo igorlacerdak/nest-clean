@@ -4,19 +4,21 @@ import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { AnswerFactory } from 'test/factories/make-answer';
 import { QuestionFactory } from 'test/factories/make-question';
 import { StudentFactory } from 'test/factories/make-students';
 
-describe('Fetch recent questions (E2E)', () => {
+describe('Fetch questions answers (E2E)', () => {
   let app: INestApplication;
   let jwt: JwtService;
   let studentFactory: StudentFactory;
   let questionFactory: QuestionFactory;
+  let answerFactory: AnswerFactory;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory, QuestionFactory],
+      providers: [StudentFactory, QuestionFactory, AnswerFactory],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -27,39 +29,51 @@ describe('Fetch recent questions (E2E)', () => {
 
     questionFactory = moduleRef.get(QuestionFactory);
 
+    answerFactory = moduleRef.get(AnswerFactory);
+
     await app.init();
   });
 
-  test('[GET] /questions', async () => {
+  test('[GET] /questions/:questionId/answers', async () => {
     const user = await studentFactory.makePrismaStudent();
 
     const access_token = jwt.sign({ sub: user.id.toString() });
 
+    const question = await questionFactory.makePrismaQuestion({
+      authorId: user.id,
+    });
+
     await Promise.all([
-      questionFactory.makePrismaQuestion({
+      answerFactory.makePrismaAnswer({
         authorId: user.id,
-        title: 'Question 01',
+        questionId: question.id,
+        content: 'Answer 01',
       }),
-      questionFactory.makePrismaQuestion({
+      answerFactory.makePrismaAnswer({
         authorId: user.id,
-        title: 'Question 02',
+        questionId: question.id,
+        content: 'Answer 02',
       }),
-      questionFactory.makePrismaQuestion({
+      answerFactory.makePrismaAnswer({
         authorId: user.id,
-        title: 'Question 03',
+        questionId: question.id,
+        content: 'Answer 03',
       }),
     ]);
 
+    const questionId = question.id.toString();
+
     const response = await request(app.getHttpServer())
-      .get('/questions')
+      .get(`/questions/${questionId}/answers`)
       .set('Authorization', `Bearer ${access_token}`);
 
     expect(response.statusCode).toBe(200);
+
     expect(response.body).toEqual({
-      questions: expect.arrayContaining([
-        expect.objectContaining({ title: 'Question 01' }),
-        expect.objectContaining({ title: 'Question 02' }),
-        expect.objectContaining({ title: 'Question 03' }),
+      answers: expect.arrayContaining([
+        expect.objectContaining({ content: 'Answer 01' }),
+        expect.objectContaining({ content: 'Answer 02' }),
+        expect.objectContaining({ content: 'Answer 03' }),
       ]),
     });
   });
