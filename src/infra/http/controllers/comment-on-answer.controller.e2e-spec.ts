@@ -6,10 +6,10 @@ import request from 'supertest';
 import { AppModule } from '@/infra/app.module';
 import { DatabaseModule } from '@/infra/database/database.module';
 import { StudentFactory } from 'test/factories/make-students';
-import { QuestionFactory } from 'test/factories/make-question';
 import { AnswerFactory } from 'test/factories/make-answer';
+import { QuestionFactory } from 'test/factories/make-question';
 
-describe('Delete answers (E2E)', () => {
+describe('Comment on answer (E2E)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let jwt: JwtService;
@@ -20,7 +20,7 @@ describe('Delete answers (E2E)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory, QuestionFactory, AnswerFactory],
+      providers: [StudentFactory, AnswerFactory, QuestionFactory],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -31,14 +31,14 @@ describe('Delete answers (E2E)', () => {
 
     studentFactory = moduleRef.get(StudentFactory);
 
-    questionFactory = moduleRef.get(QuestionFactory);
-
     answerFactory = moduleRef.get(AnswerFactory);
+
+    questionFactory = moduleRef.get(QuestionFactory);
 
     await app.init();
   });
 
-  test('[DELETE] /answers/:id', async () => {
+  test('[POST] /answers/:answerId/comments', async () => {
     const user = await studentFactory.makePrismaStudent();
 
     const access_token = jwt.sign({ sub: user.id.toString() });
@@ -55,18 +55,20 @@ describe('Delete answers (E2E)', () => {
     const answerId = answer.id.toString();
 
     const response = await request(app.getHttpServer())
-      .delete(`/answers/${answerId}`)
+      .post(`/answers/${answerId}/comments`)
       .set('Authorization', `Bearer ${access_token}`)
-      .send();
+      .send({
+        content: 'New comment',
+      });
 
-    expect(response.statusCode).toBe(204);
+    expect(response.statusCode).toBe(201);
 
-    const answerOnDatabase = await prisma.answer.findUnique({
+    const commentOnDatabase = await prisma.comment.findFirst({
       where: {
-        id: answerId,
+        content: 'New comment',
       },
     });
 
-    expect(answerOnDatabase).toBeNull();
+    expect(commentOnDatabase).toBeTruthy();
   });
 });
