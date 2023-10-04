@@ -7,6 +7,8 @@ import request from 'supertest';
 import { QuestionFactory } from 'test/factories/make-question';
 import { StudentFactory } from 'test/factories/make-students';
 
+import { join } from 'path';
+
 describe('Upload attachment (E2E)', () => {
   let app: INestApplication;
   let jwt: JwtService;
@@ -32,10 +34,12 @@ describe('Upload attachment (E2E)', () => {
 
     const access_token = jwt.sign({ sub: user.id.toString() });
 
+    const image = join(__dirname, '../../../../test/e2e', 'nodejs.png');
+
     const response = await request(app.getHttpServer())
-      .get('/attachments')
+      .post('/attachments')
       .set('Authorization', `Bearer ${access_token}`)
-      .attach('file', './test/e2e/sample-upload.jpeg');
+      .attach('file', image);
 
     expect(response.statusCode).toBe(201);
   });
