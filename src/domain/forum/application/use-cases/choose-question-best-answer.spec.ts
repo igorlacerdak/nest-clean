@@ -7,11 +7,15 @@ import { makeQuestion } from 'test/factories/make-question';
 import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
 import { InMemoryAnswerAttachmentRepository } from 'test/repositories/in-memory-answer-attachments-repository';
 import { InMemoryQuestionAttachmentRepository } from 'test/repositories/in-memory-question-attachments-repository';
+import { InMemoryAttachmentsRepository } from 'test/repositories/in-memory-attachments-repository';
+import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository';
 
 let inMemoryAnswerRepository: InMemoryAnswerRepository;
 let inMemoryAnswerAttachmentRepository: InMemoryAnswerAttachmentRepository;
 let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository;
 let inMemoryQuestionRepository: InMemoryQuestionsRepository;
+let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository;
+let inMemoryStudentsRepository: InMemoryStudentsRepository;
 let sut: ChooseQuestionBestAnswerUseCase;
 
 describe('Choose Question Best Answer', () => {
@@ -26,8 +30,14 @@ describe('Choose Question Best Answer', () => {
       inMemoryAnswerAttachmentRepository,
     );
 
+    inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository();
+
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
+
     inMemoryQuestionRepository = new InMemoryQuestionsRepository(
       inMemoryQuestionAttachmentRepository,
+      inMemoryAttachmentsRepository,
+      inMemoryStudentsRepository,
     );
 
     sut = new ChooseQuestionBestAnswerUseCase(

@@ -1,14 +1,19 @@
 import { DomainEvents } from '@/core/events/domain-events';
 import { PaginationParams } from '@/core/repositories/pagination-params';
-import { QuestionAttachmentRepository } from '@/domain/forum/application/repositories/question-attachment-repository';
 import { QuestionsRepository } from '@/domain/forum/application/repositories/questions-repository';
 import { Question } from '@/domain/forum/enterprise/entities/question';
+import { QuestionDetails } from '@/domain/forum/enterprise/entities/value-objects/question-details';
+import { InMemoryStudentsRepository } from './in-memory-students-repository';
+import { InMemoryAttachmentsRepository } from './in-memory-attachments-repository';
+import { InMemoryQuestionAttachmentRepository } from './in-memory-question-attachments-repository';
 
 export class InMemoryQuestionsRepository implements QuestionsRepository {
   public items: Question[] = [];
 
   constructor(
-    private questionAttachmentRepository: QuestionAttachmentRepository,
+    private questionAttachmentRepository: InMemoryQuestionAttachmentRepository,
+    private attachmentsRepository: InMemoryAttachmentsRepository,
+    private studentsRepository: InMemoryStudentsRepository,
   ) {}
 
   public async findById(id: string): Promise<Question | null> {
@@ -29,6 +34,59 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     }
 
     return question;
+  }
+
+  public async findDetailsBySlug(
+    slug: string,
+  ): Promise<QuestionDetails | null> {
+    const question = this.items.find((item) => item.slug.value === slug);
+
+    if (!question) {
+      return null;
+    }
+
+    const author = this.studentsRepository.items.find((student) => {
+      return student.id.equals(question.authorId);
+    });
+
+    if (!author) {
+      throw new Error(
+        `Author with ID "${question.authorId.toString()}" does not exits `,
+      );
+    }
+
+    const questionAttachments = this.questionAttachmentRepository.items.filter(
+      (questionAttachemnt) => {
+        return questionAttachemnt.questionId.equals(question.id);
+      },
+    );
+
+    const attachments = questionAttachments.map((questionAttachemnt) => {
+      const attachment = this.attachmentsRepository.items.find((attachment) => {
+        return attachment.id.equals(questionAttachemnt.attachmentId);
+      });
+
+      if (!attachment) {
+        throw new Error(
+          `Attachment with ID "${questionAttachemnt}" does not exits `,
+        );
+      }
+
+      return attachment;
+    });
+
+    return QuestionDetails.create({
+      questionId: question.id,
+      authorId: question.authorId,
+      author: author.name,
+      title: question.title,
+      slug: question.slug,
+      content: question.content,
+      bestAnswerId: question.bestAnswerId,
+      attachments,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    });
   }
 
   public async findManyRecent({ page }: PaginationParams): Promise<Question[]> {
