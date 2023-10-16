@@ -3,6 +3,7 @@ import { Notification } from '../../enterprise/entities/notification';
 import { NotificationsRepository } from '../repositories/notifications-repository';
 import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { Injectable } from '@nestjs/common';
 interface ReadNotificationUseCaseRequest {
   recipientId: string;
   notificationId: string;
@@ -15,6 +16,7 @@ type ReadNotificationUseCaseResponse = Either<
   }
 >;
 
+@Injectable()
 export class ReadNotificationUseCase {
   constructor(private notificationsRepository: NotificationsRepository) {}
 
@@ -22,9 +24,8 @@ export class ReadNotificationUseCase {
     recipientId,
     notificationId,
   }: ReadNotificationUseCaseRequest): Promise<ReadNotificationUseCaseResponse> {
-    const notification = await this.notificationsRepository.findById(
-      notificationId
-    );
+    const notification =
+      await this.notificationsRepository.findById(notificationId);
 
     if (!notification) {
       return left(new ResourceNotFoundError());
